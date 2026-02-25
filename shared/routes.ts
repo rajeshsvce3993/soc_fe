@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertUserSchema, insertAlertSchema, insertIncidentSchema, alerts, incidents, users } from './schema';
+import { insertUserSchema, insertAlertSchema, insertIncidentSchema, Alert, Incident, User } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -71,14 +71,14 @@ export const api = {
       method: 'GET' as const,
       path: '/api/alerts',
       responses: {
-        200: z.array(z.custom<typeof alerts.$inferSelect & { assigneeName?: string }>()),
+        200: z.array(z.custom<Alert & { assigneeName?: string }>()),
       },
     },
     get: {
       method: 'GET' as const,
       path: '/api/alerts/:id',
       responses: {
-        200: z.custom<typeof alerts.$inferSelect>(),
+        200: z.custom<Alert>(),
         404: errorSchemas.notFound,
       },
     },
@@ -87,7 +87,7 @@ export const api = {
       path: '/api/alerts/:id',
       input: insertAlertSchema.partial(),
       responses: {
-        200: z.custom<typeof alerts.$inferSelect>(),
+        200: z.custom<Alert>(),
         404: errorSchemas.notFound,
       },
     },
@@ -99,14 +99,14 @@ export const api = {
       method: 'GET' as const,
       path: '/api/incidents',
       responses: {
-        200: z.array(z.custom<typeof incidents.$inferSelect>()),
+        200: z.array(z.custom<Incident>()),
       },
     },
     get: {
       method: 'GET' as const,
       path: '/api/incidents/:id',
       responses: {
-        200: z.custom<typeof incidents.$inferSelect>(),
+        200: z.custom<Incident>(),
         404: errorSchemas.notFound,
       },
     },
@@ -118,7 +118,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/users',
       responses: {
-        200: z.array(z.custom<typeof users.$inferSelect>()),
+        200: z.array(z.custom<User>()),
       },
     },
     create: {
@@ -126,7 +126,7 @@ export const api = {
       path: '/api/users',
       input: insertUserSchema,
       responses: {
-        200: z.custom<typeof users.$inferSelect>(),
+        200: z.custom<User>(),
       },
     },
   }
