@@ -203,31 +203,51 @@ export default function Alerts() {
                   {alert.description}
                 </TableCell>
                 <TableCell>
-                  <Select 
-                    defaultValue={alert.status.toLowerCase().replace(' ', '-')}
-                    onValueChange={(val) => updateMutation.mutate({ id: alert.id, updates: { status: val } })}
-                  >
-                    <SelectTrigger className="w-[120px] bg-[#161e31] border-zinc-800 text-zinc-300 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#161e31] border-zinc-800 text-zinc-300">
-                      <SelectItem value="open">Open</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const rawStatus = (alert.status ?? "").toString();
+                    const normalizedStatus = rawStatus.toLowerCase().replace(/\s+/g, "_").replace(/-+/g, "_");
+                    const currentStatus =
+                      normalizedStatus === "open" ||
+                      normalizedStatus === "in_progress" ||
+                      normalizedStatus === "closed" ||
+                      normalizedStatus === "new"
+                        ? normalizedStatus
+                        : "new";
+
+                    return (
+                      <Select
+                        defaultValue={currentStatus}
+                        onValueChange={(val) =>
+                          updateMutation.mutate({
+                            id: alert.id,
+                            updates: { status: val },
+                          })
+                        }
+                      >
+                        <SelectTrigger className="w-[140px] bg-[#161e31] border-zinc-800 text-zinc-300 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161e31] border-zinc-800 text-zinc-300">
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="open">Open</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell>
                   <Select
                     defaultValue={
                       (assignableUsers || []).find((u: any) => u.name === alert.assignedTo)?.email ||
-                      "unassigned"
+                      "none"
                     }
                     onValueChange={(value) => {
-                      if (value === "unassigned") {
+                      if (value === "none") {
                         updateMutation.mutate({
                           id: alert.id,
-                          updates: { assignedTo: "Unassigned", assignedToEmail: null },
+                          updates: { assignedTo: "None", assignedToEmail: null },
                         });
                         return;
                       }
@@ -244,10 +264,10 @@ export default function Alerts() {
                     disabled={usersLoading || usersError}
                   >
                     <SelectTrigger className="w-[160px] bg-[#161e31] border-zinc-800 text-zinc-300 h-8 text-xs">
-                      <SelectValue placeholder={usersLoading ? "Loading users..." : "Assign user"} />
+                      <SelectValue placeholder={usersLoading ? "Loading users..." : "None"} />
                     </SelectTrigger>
                     <SelectContent className="bg-[#161e31] border-zinc-800 text-zinc-300">
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {(assignableUsers || []).map((u: any) => (
                         <SelectItem key={u._id ?? u.email} value={u.email}>
                           {u.name}
@@ -257,21 +277,44 @@ export default function Alerts() {
                   </Select>
                 </TableCell>
                 <TableCell>
-                  <Select 
-                    defaultValue={alert.disposition.toLowerCase()}
-                    onValueChange={(val) => updateMutation.mutate({ id: alert.id, updates: { disposition: val } })}
-                  >
-                    <SelectTrigger className="w-[120px] bg-[#161e31] border-zinc-800 text-zinc-300 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#161e31] border-zinc-800 text-zinc-300">
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="investigating">Investigating</SelectItem>
-                      <SelectItem value="escalated">Escalated</SelectItem>
-                      <SelectItem value="analyzing">Analyzing</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const rawDisposition = (alert.disposition ?? "").toString().toLowerCase();
+                    let currentDisposition: string = "none";
+                    if (rawDisposition === "true_positive") currentDisposition = "true_positive";
+                    else if (rawDisposition === "false_positive") currentDisposition = "false_positive";
+                    else if (rawDisposition === "benign_positive") currentDisposition = "benign_positive";
+                    else if (rawDisposition === "escalated") currentDisposition = "escalated";
+
+                    return (
+                      <Select
+                        defaultValue={currentDisposition}
+                        onValueChange={(val) => {
+                          if (val === "none") {
+                            updateMutation.mutate({
+                              id: alert.id,
+                              updates: { disposition: null },
+                            });
+                            return;
+                          }
+                          updateMutation.mutate({
+                            id: alert.id,
+                            updates: { disposition: val },
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="w-[160px] bg-[#161e31] border-zinc-800 text-zinc-300 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#161e31] border-zinc-800 text-zinc-300">
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="true_positive">True Positive</SelectItem>
+                          <SelectItem value="false_positive">False Positive</SelectItem>
+                          <SelectItem value="benign_positive">Benign Positive</SelectItem>
+                          <SelectItem value="escalated">Escalated</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
