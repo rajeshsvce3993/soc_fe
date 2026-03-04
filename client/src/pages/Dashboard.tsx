@@ -257,7 +257,9 @@ export default function Dashboard() {
                     stroke="#06b6d4" 
                     strokeWidth={3} 
                     fillOpacity={1} 
-                    fill="url(#colorMttd)" 
+                    fill="url(#colorMttd)"
+                    connectNulls
+                    dot={{ r: 3 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -298,7 +300,9 @@ export default function Dashboard() {
                     stroke="#3b82f6" 
                     strokeWidth={3} 
                     fillOpacity={1} 
-                    fill="url(#colorMttr)" 
+                    fill="url(#colorMttr)"
+                    connectNulls
+                    dot={{ r: 3 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
