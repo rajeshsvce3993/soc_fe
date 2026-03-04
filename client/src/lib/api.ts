@@ -1,4 +1,4 @@
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://3.110.179.236:4000";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
