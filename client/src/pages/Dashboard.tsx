@@ -318,9 +318,9 @@ export default function Dashboard() {
         <Card className="bg-[#161e31] border-zinc-800 shadow-xl rounded-xl">
           <CardContent className="p-6 space-y-6">
             <h3 className="font-bold text-white">Detection Accuracy Metrics</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               {accuracyLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
+                Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4">
                     <div className="flex justify-between items-center">
                       <div className="h-4 w-24 bg-zinc-800 rounded animate-pulse" />
@@ -357,6 +357,22 @@ export default function Dashboard() {
                 </div>
                 <Progress value={parseFloat(accuracy?.benignPositive.percentage ?? '0') || 0} className="h-2 bg-zinc-800" />
                 <p className="text-[10px] text-zinc-500 font-medium">{accuracy?.benignPositive.percentage} of total detections</p>
+              </div>
+              
+              <div className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-semibold text-zinc-300">Escalated</p>
+                  <p className="text-2xl font-bold text-fuchsia-400">
+                    {accuracy?.escalated?.count ?? 0}
+                  </p>
+                </div>
+                <Progress
+                  value={parseFloat(accuracy?.escalated?.percentage ?? "0") || 0}
+                  className="h-2 bg-zinc-800"
+                />
+                <p className="text-[10px] text-zinc-500 font-medium">
+                  {(accuracy?.escalated?.percentage ?? "0")} of total detections
+                </p>
               </div>
                 </>
               )}
