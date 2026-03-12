@@ -30,7 +30,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ CatchAll)\n/* harmony export */ });\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-dev-runtime */ \"react/jsx-dev-runtime\");\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var next_dynamic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! next/dynamic */ \"./node_modules/next/dynamic.js\");\n/* harmony import */ var next_dynamic__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(next_dynamic__WEBPACK_IMPORTED_MODULE_1__);\n\n\nconst App = next_dynamic__WEBPACK_IMPORTED_MODULE_1___default()(()=>Promise.all(/*! import() */[__webpack_require__.e(\"vendor-chunks/recharts\"), __webpack_require__.e(\"vendor-chunks/lucide-react\"), __webpack_require__.e(\"client_src_App_tsx\")]).then(__webpack_require__.bind(__webpack_require__, /*! ../client/src/App */ \"./client/src/App.tsx\")), {\n    loadableGenerated: {\n        modules: [\n            \"pages\\\\[[...slug]].tsx -> \" + \"../client/src/App\"\n        ]\n    },\n    ssr: false\n});\nfunction CatchAll() {\n    return /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(App, {}, void 0, false, {\n        fileName: \"C:\\\\Users\\\\rajes\\\\Documents\\\\projects\\\\SOC\\\\soc_fe\\\\pages\\\\[[...slug]].tsx\",\n        lineNumber: 6,\n        columnNumber: 10\n    }, this);\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9wYWdlcy9bWy4uLnNsdWddXS50c3giLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7O0FBQW1DO0FBRW5DLE1BQU1DLE1BQU1ELG1EQUFPQSxDQUFDLElBQU0sb1JBQU87Ozs7OztJQUF3QkUsS0FBSzs7QUFFL0MsU0FBU0M7SUFDdEIscUJBQU8sOERBQUNGOzs7OztBQUNWIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vc29jLWZyb250ZW5kLy4vcGFnZXMvW1suLi5zbHVnXV0udHN4P2ZjYTUiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IGR5bmFtaWMgZnJvbSAnbmV4dC9keW5hbWljJztcclxuXHJcbmNvbnN0IEFwcCA9IGR5bmFtaWMoKCkgPT4gaW1wb3J0KCcuLi9jbGllbnQvc3JjL0FwcCcpLCB7IHNzcjogZmFsc2UgfSk7XHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBDYXRjaEFsbCgpIHtcclxuICByZXR1cm4gPEFwcCAvPjtcclxufVxyXG4iXSwibmFtZXMiOlsiZHluYW1pYyIsIkFwcCIsInNzciIsIkNhdGNoQWxsIl0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./pages/[[...slug]].tsx\n");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ CatchAll)\n/* harmony export */ });\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-dev-runtime */ \"react/jsx-dev-runtime\");\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var next_dynamic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! next/dynamic */ \"./node_modules/next/dynamic.js\");\n/* harmony import */ var next_dynamic__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(next_dynamic__WEBPACK_IMPORTED_MODULE_1__);\n\n\nconst App = next_dynamic__WEBPACK_IMPORTED_MODULE_1___default()(()=>Promise.all(/*! import() */[__webpack_require__.e(\"vendor-chunks/recharts\"), __webpack_require__.e(\"vendor-chunks/lucide-react\"), __webpack_require__.e(\"vendor-chunks/date-fns\"), __webpack_require__.e(\"client_src_App_tsx\")]).then(__webpack_require__.bind(__webpack_require__, /*! ../client/src/App */ \"./client/src/App.tsx\")), {\n    loadableGenerated: {\n        modules: [\n            \"pages\\\\[[...slug]].tsx -> \" + \"../client/src/App\"\n        ]\n    },\n    ssr: false\n});\nfunction CatchAll() {\n    return /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(App, {}, void 0, false, {\n        fileName: \"C:\\\\Users\\\\rajes\\\\Documents\\\\projects\\\\SOC\\\\soc_fe\\\\pages\\\\[[...slug]].tsx\",\n        lineNumber: 6,\n        columnNumber: 10\n    }, this);\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9wYWdlcy9bWy4uLnNsdWddXS50c3giLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7O0FBQW1DO0FBRW5DLE1BQU1DLE1BQU1ELG1EQUFPQSxDQUFDLElBQU0scVVBQU87Ozs7OztJQUF3QkUsS0FBSzs7QUFFL0MsU0FBU0M7SUFDdEIscUJBQU8sOERBQUNGOzs7OztBQUNWIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vc29jLWZyb250ZW5kLy4vcGFnZXMvW1suLi5zbHVnXV0udHN4P2ZjYTUiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IGR5bmFtaWMgZnJvbSAnbmV4dC9keW5hbWljJztcclxuXHJcbmNvbnN0IEFwcCA9IGR5bmFtaWMoKCkgPT4gaW1wb3J0KCcuLi9jbGllbnQvc3JjL0FwcCcpLCB7IHNzcjogZmFsc2UgfSk7XHJcblxyXG5leHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBDYXRjaEFsbCgpIHtcclxuICByZXR1cm4gPEFwcCAvPjtcclxufVxyXG4iXSwibmFtZXMiOlsiZHluYW1pYyIsIkFwcCIsInNzciIsIkNhdGNoQWxsIl0sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./pages/[[...slug]].tsx\n");
 
 /***/ }),
 
@@ -352,6 +352,17 @@ module.exports = require("react");
 
 /***/ }),
 
+/***/ "react-day-picker":
+/*!***********************************!*\
+  !*** external "react-day-picker" ***!
+  \***********************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("react-day-picker");
+
+/***/ }),
+
 /***/ "react-is":
 /*!***************************!*\
   !*** external "react-is" ***!
@@ -451,6 +462,17 @@ module.exports = import("@hookform/resolvers/zod");;
 
 /***/ }),
 
+/***/ "@radix-ui/react-alert-dialog":
+/*!***********************************************!*\
+  !*** external "@radix-ui/react-alert-dialog" ***!
+  \***********************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = import("@radix-ui/react-alert-dialog");;
+
+/***/ }),
+
 /***/ "@radix-ui/react-avatar":
 /*!*****************************************!*\
   !*** external "@radix-ui/react-avatar" ***!
@@ -503,6 +525,17 @@ module.exports = import("@radix-ui/react-dropdown-menu");;
 
 "use strict";
 module.exports = import("@radix-ui/react-label");;
+
+/***/ }),
+
+/***/ "@radix-ui/react-popover":
+/*!******************************************!*\
+  !*** external "@radix-ui/react-popover" ***!
+  \******************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = import("@radix-ui/react-popover");;
 
 /***/ }),
 

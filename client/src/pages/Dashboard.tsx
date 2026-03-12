@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { dashboardApi } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,12 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { subDays, startOfDay, endOfDay } from "date-fns";
+import { useLocation } from "wouter";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -37,14 +44,44 @@ import { useAuth } from "@/components/auth-provider";
 
 export default function Dashboard() {
   const { logout, user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const [rangePreset, setRangePreset] = useState<"24h" | "7d" | "30d" | "custom">("30d");
+  const [customRange, setCustomRange] = useState<{ from: Date; to: Date } | null>(null);
+
+  const activeRange = useMemo(() => {
+    const now = new Date();
+    if (rangePreset === "24h") {
+      return { from: subDays(now, 1), to: now };
+    }
+    if (rangePreset === "7d") {
+      return { from: subDays(startOfDay(now), 7), to: endOfDay(now) };
+    }
+    if (rangePreset === "30d") {
+      return { from: subDays(startOfDay(now), 30), to: endOfDay(now) };
+    }
+    if (customRange?.from && customRange?.to) {
+      return customRange;
+    }
+    return { from: subDays(startOfDay(now), 30), to: endOfDay(now) };
+  }, [rangePreset, customRange?.from?.getTime(), customRange?.to?.getTime()]);
+
+  const rangeParams = useMemo(
+    () => ({
+      from: activeRange.from.toISOString(),
+      to: activeRange.to.toISOString(),
+    }),
+    [activeRange.from.getTime(), activeRange.to.getTime()]
+  );
+
   const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: ["dashboard-metrics"],
-    queryFn: dashboardApi.getMetrics
+    queryKey: ["dashboard-metrics", rangeParams],
+    queryFn: () => dashboardApi.getMetrics(rangeParams),
   });
 
   const { data: trends, isLoading: trendsLoading } = useQuery({
-    queryKey: ["dashboard-trends"],
-    queryFn: () => dashboardApi.getTrends(),
+    queryKey: ["dashboard-trends", rangeParams],
+    queryFn: () => dashboardApi.getTrends({ from: rangeParams.from, to: rangeParams.to }),
   });
 
   function pctChange(data: any[] | undefined, key: string) {
@@ -58,13 +95,13 @@ export default function Dashboard() {
   }
 
   const { data: accuracy, isLoading: accuracyLoading } = useQuery({
-    queryKey: ["dashboard-accuracy"],
-    queryFn: dashboardApi.getAccuracyMetrics
+    queryKey: ["dashboard-accuracy", rangeParams],
+    queryFn: () => dashboardApi.getAccuracyMetrics(rangeParams),
   });
 
   const { data: recentActivities, isLoading: recentLoading, isError: recentError } = useQuery({
-    queryKey: ["dashboard-recent-activities"],
-    queryFn: dashboardApi.getRecentActivities,
+    queryKey: ["dashboard-recent-activities", rangeParams],
+    queryFn: () => dashboardApi.getRecentActivities(rangeParams),
   });
 
   const metricsSectionLoading = metricsLoading;
@@ -73,6 +110,7 @@ export default function Dashboard() {
     <div className="p-8 space-y-8 bg-[#0a0f1e] min-h-screen text-zinc-100 font-sans">
       {/* Header / Top Bar */}
       <div className="flex items-center justify-between mb-8">
+        {/* Left: search */}
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <Input 
@@ -80,7 +118,48 @@ export default function Dashboard() {
             placeholder="Search alerts, IOCs, threat intel..." 
           />
         </div>
-        
+
+        {/* Center: date range filter */}
+        <div className="flex items-center gap-3">
+          <Select
+            value={rangePreset}
+            onValueChange={(val) => setRangePreset(val as typeof rangePreset)}
+          >
+            <SelectTrigger className="w-[140px] bg-[#161e31] border-zinc-800 text-zinc-300 h-10 text-xs">
+              <SelectValue placeholder="Last 30 days" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#161e31] border-zinc-800 text-zinc-300">
+              <SelectItem value="24h">Last 24 hours</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="custom">Custom range</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-[#161e31] border-zinc-800 text-zinc-300 h-10 text-xs"
+              >
+                {activeRange.from.toLocaleDateString()} - {activeRange.to.toLocaleDateString()}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="bg-[#111827] border-zinc-800 text-zinc-100" align="end">
+              <Calendar
+                mode="range"
+                selected={customRange ?? { from: activeRange.from, to: activeRange.to }}
+                onSelect={(range) => {
+                  if (!range?.from || !range.to) return;
+                  setCustomRange({ from: range.from, to: range.to });
+                  setRangePreset("custom");
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Right: user/profile */}
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3 pl-4 border-l border-zinc-800">
             <div className="text-right">
@@ -90,7 +169,9 @@ export default function Dashboard() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="h-10 w-10 border-2 border-cyan-500/20 cursor-pointer hover:border-cyan-500 transition-colors">
-                  <AvatarFallback className="bg-cyan-600 text-white font-bold">{(user?.name || 'G').split(' ').map(n=>n[0]).slice(0,2).join('')}</AvatarFallback>
+                  <AvatarFallback className="bg-cyan-600 text-white font-bold">
+                    {(user?.name || 'G').split(' ').map(n=>n[0]).slice(0,2).join('')}
+                  </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64 bg-[#161e31] border-zinc-800 text-zinc-100">
@@ -100,7 +181,10 @@ export default function Dashboard() {
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile Details</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer text-rose-500 focus:text-rose-500 hover:bg-rose-500/10 focus:bg-rose-500/10" onClick={() => logout()}>
+                <DropdownMenuItem
+                  className="cursor-pointer text-rose-500 focus:text-rose-500 hover:bg-rose-500/10 focus:bg-rose-500/10"
+                  onClick={() => logout()}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -135,42 +219,50 @@ export default function Dashboard() {
           ))
         ) : (
           <>
-        <Card className="bg-[#161e31] border-zinc-800 shadow-xl group">
+        <Card className="bg-[#161e31] border-zinc-800 shadow-xl group cursor-pointer hover:border-cyan-500/50 hover:shadow-cyan-500/20 transition"
+          onClick={() => setLocation("/alerts")}
+        >
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-blue-500/10 rounded-lg">
                 <Database className="w-5 h-5 text-blue-400" />
               </div>
               <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" /> {metrics?.totalCasesTrend}
+                <TrendingUp className="w-3 h-3" /> {metrics?.totalCasesTrend ?? "-"}
               </span>
             </div>
             <div>
-              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.totalCases.toLocaleString()}</p>
+              <p className="text-3xl font-bold tracking-tighter text-white">{(metrics?.totalCases ?? 0).toLocaleString()}</p>
               <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mt-1">Total Cases</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#161e31] border-zinc-800 shadow-xl">
+        <Card
+          className="bg-[#161e31] border-zinc-800 shadow-xl cursor-pointer hover:border-cyan-500/50 hover:shadow-cyan-500/20 transition"
+          onClick={() => setLocation("/alerts?status=open")}
+        >
           <CardContent className="p-6 space-y-4">
             <div className="p-2 bg-amber-500/10 rounded-lg w-fit">
               <AlertTriangle className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.openCases}</p>
+              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.openCases ?? 0}</p>
               <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mt-1">Open Cases</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#161e31] border-zinc-800 shadow-xl">
+        <Card
+          className="bg-[#161e31] border-zinc-800 shadow-xl cursor-pointer hover:border-cyan-500/50 hover:shadow-cyan-500/20 transition"
+          onClick={() => setLocation("/alerts?status=closed")}
+        >
           <CardContent className="p-6 space-y-4">
             <div className="p-2 bg-emerald-500/10 rounded-lg w-fit">
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.closedCases.toLocaleString()}</p>
+              <p className="text-3xl font-bold tracking-tighter text-white">{(metrics?.closedCases ?? 0).toLocaleString()}</p>
               <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mt-1">Closed Cases</p>
             </div>
           </CardContent>
@@ -182,7 +274,7 @@ export default function Dashboard() {
               <Clock className="w-5 h-5 text-cyan-400" />
             </div>
             <div>
-              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.mttd}</p>
+              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.mttd ?? 0}</p>
               <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mt-1">MTTD</p>
               <p className="text-[9px] text-zinc-600 mt-0.5 italic">Mean Time to Detect</p>
             </div>
@@ -195,7 +287,7 @@ export default function Dashboard() {
               <TrendingUp className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.mttr}</p>
+              <p className="text-3xl font-bold tracking-tighter text-white">{metrics?.mttr ?? 0}</p>
               <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider mt-1">MTTR</p>
               <p className="text-[9px] text-zinc-600 mt-0.5 italic">Mean Time to Respond</p>
             </div>
@@ -236,8 +328,13 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="h-64 w-full">
+              {(!trends || trends.length === 0) ? (
+                <div className="h-full flex items-center justify-center text-zinc-500 text-sm">
+                  No data found
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trends ?? []}>
+                <AreaChart data={trends}>
                   <defs>
                     <linearGradient id="colorMttd" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
@@ -263,6 +360,7 @@ export default function Dashboard() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -279,8 +377,13 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="h-64 w-full">
+              {(!trends || trends.length === 0) ? (
+                <div className="h-full flex items-center justify-center text-zinc-500 text-sm">
+                  No data found
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trends ?? []}>
+                <AreaChart data={trends}>
                   <defs>
                     <linearGradient id="colorMttr" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -306,6 +409,7 @@ export default function Dashboard() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -332,34 +436,46 @@ export default function Dashboard() {
                 ))
               ) : (
                 <>
-              <div className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4">
+              <div
+                className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4 cursor-pointer hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-500/20 transition"
+                onClick={() => setLocation("/alerts?disposition=true_positive")}
+              >
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-zinc-300">True Positive</p>
-                  <p className="text-2xl font-bold text-emerald-500">{accuracy?.truePositive.count}</p>
+                  <p className="text-2xl font-bold text-emerald-500">{accuracy?.truePositive?.count ?? 0}</p>
                 </div>
-                <Progress value={parseFloat(accuracy?.truePositive.percentage ?? '0') || 0} className="h-2 bg-zinc-800" />
-                <p className="text-[10px] text-zinc-500 font-medium">{accuracy?.truePositive.percentage} of total detections</p>
+                <Progress value={parseFloat(String(accuracy?.truePositive?.percentage ?? '0').replace('%','')) || 0} className="h-2 bg-zinc-800" />
+                <p className="text-[10px] text-zinc-500 font-medium">{accuracy?.truePositive?.percentage ?? "0"} of total detections</p>
               </div>
 
-              <div className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4">
+              <div
+                className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4 cursor-pointer hover:border-amber-500/60 hover:shadow-lg hover:shadow-amber-500/20 transition"
+                onClick={() => setLocation("/alerts?disposition=false_positive")}
+              >
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-zinc-300">False Positive</p>
-                  <p className="text-2xl font-bold text-amber-500">{accuracy?.falsePositive.count}</p>
+                  <p className="text-2xl font-bold text-amber-500">{accuracy?.falsePositive?.count ?? 0}</p>
                 </div>
-                <Progress value={parseFloat(accuracy?.falsePositive.percentage ?? '0') || 0} className="h-2 bg-zinc-800" />
-                <p className="text-[10px] text-zinc-500 font-medium">{accuracy?.falsePositive.percentage} of total detections</p>
+                <Progress value={parseFloat(String(accuracy?.falsePositive?.percentage ?? '0').replace('%','')) || 0} className="h-2 bg-zinc-800" />
+                <p className="text-[10px] text-zinc-500 font-medium">{accuracy?.falsePositive?.percentage ?? "0"} of total detections</p>
               </div>
 
-              <div className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4">
+              <div
+                className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4 cursor-pointer hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-500/20 transition"
+                onClick={() => setLocation("/alerts?disposition=benign_positive")}
+              >
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-zinc-300">Benign Positive</p>
-                  <p className="text-2xl font-bold text-blue-500">{accuracy?.benignPositive.count}</p>
+                  <p className="text-2xl font-bold text-blue-500">{accuracy?.benignPositive?.count ?? 0}</p>
                 </div>
-                <Progress value={parseFloat(accuracy?.benignPositive.percentage ?? '0') || 0} className="h-2 bg-zinc-800" />
-                <p className="text-[10px] text-zinc-500 font-medium">{accuracy?.benignPositive.percentage} of total detections</p>
+                <Progress value={parseFloat(String(accuracy?.benignPositive?.percentage ?? '0').replace('%','')) || 0} className="h-2 bg-zinc-800" />
+                <p className="text-[10px] text-zinc-500 font-medium">{accuracy?.benignPositive?.percentage ?? "0"} of total detections</p>
               </div>
               
-              <div className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4">
+              <div
+                className="bg-[#111827] border border-zinc-800 rounded-xl p-5 space-y-4 cursor-pointer hover:border-fuchsia-500/60 hover:shadow-lg hover:shadow-fuchsia-500/20 transition"
+                onClick={() => setLocation("/alerts?disposition=escalated")}
+              >
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-semibold text-zinc-300">Escalated</p>
                   <p className="text-2xl font-bold text-fuchsia-400">
@@ -367,7 +483,7 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <Progress
-                  value={parseFloat(accuracy?.escalated?.percentage ?? "0") || 0}
+                  value={parseFloat(String(accuracy?.escalated?.percentage ?? "0").replace('%','')) || 0}
                   className="h-2 bg-zinc-800"
                 />
                 <p className="text-[10px] text-zinc-500 font-medium">

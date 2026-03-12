@@ -64,7 +64,44 @@ export default function Alerts() {
   });
 
   const alerts = data?.items ?? [];
-  const total = data?.total ?? alerts.length;
+
+  // Apply filters from query string (?status=...&disposition=...)
+  let statusFilter: string | null = null;
+  let dispositionFilter: string | null = null;
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    statusFilter = params.get("status");
+    dispositionFilter = params.get("disposition");
+  }
+
+  const normalizedStatusFilter = statusFilter
+    ? statusFilter.toLowerCase().replace(/\s+/g, "_").replace(/-+/g, "_")
+    : null;
+
+  const normalizedDispositionFilter = dispositionFilter
+    ? dispositionFilter.toLowerCase()
+    : null;
+
+  const filteredAlerts = alerts.filter((alert: any) => {
+    const rawStatus = (alert.status ?? "").toString();
+    const alertStatus = rawStatus.toLowerCase().replace(/\s+/g, "_").replace(/-+/g, "_");
+
+    const rawDisposition = (alert.disposition ?? "").toString().toLowerCase();
+
+    if (normalizedStatusFilter && alertStatus !== normalizedStatusFilter) {
+      return false;
+    }
+    if (normalizedDispositionFilter && rawDisposition !== normalizedDispositionFilter) {
+      return false;
+    }
+    if (search.trim()) {
+      const term = search.toLowerCase();
+      const haystack = `${alert.name ?? ""} ${alert.description ?? ""}`.toLowerCase();
+      if (!haystack.includes(term)) return false;
+    }
+    return true;
+  });
+  const total = data?.total ?? filteredAlerts.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const {
@@ -186,7 +223,7 @@ export default function Alerts() {
                   <TableCell className="text-right"><div className="h-8 w-20 bg-zinc-800 rounded animate-pulse ml-auto" /></TableCell>
                 </TableRow>
               ))
-            ) : !isError && alerts?.map((alert: any) => (
+            ) : !isError && filteredAlerts?.map((alert: any) => (
               <TableRow key={alert.id} className="border-zinc-800/50 hover:bg-[#161e31]/30 transition-colors group">
                 <TableCell className="py-5 font-bold text-zinc-200">
                   <div className="flex items-center gap-2">

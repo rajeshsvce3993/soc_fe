@@ -150,6 +150,48 @@ export const usersApi = {
     if (Array.isArray(payload)) return payload;
     return [];
   },
+
+  update: async (
+    id: string,
+    payload: Partial<{ name: string; email: string; mobile: string; role: string; team?: string }>
+  ) => {
+    const resp = await fetch(`${BASE_API_URL}/api/users/${id}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(text || `Update user failed (${resp.status})`);
+    }
+    return await resp.json();
+  },
+
+  deactivate: async (id: string) => {
+    const resp = await fetch(`${BASE_API_URL}/api/users/${id}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ status: "inactive", active: false }),
+    });
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(text || `Deactivate user failed (${resp.status})`);
+    }
+    return await resp.json();
+  },
+
+  activate: async (id: string) => {
+    const resp = await fetch(`${BASE_API_URL}/api/users/${id}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ status: "active", active: true }),
+    });
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => "");
+      throw new Error(text || `Activate user failed (${resp.status})`);
+    }
+    return await resp.json();
+  },
 };
 
 export const rolesApi = {
@@ -164,9 +206,13 @@ export const rolesApi = {
 };
 
 export const dashboardApi = {
-  getMetrics: async () => {
+  getMetrics: async (opts?: { from?: string; to?: string }) => {
     try {
-      const resp = await fetch(`${BASE_API_URL}/api/dashboard/getmetrics`, {
+      const search = new URLSearchParams();
+      if (opts?.from) search.append("from", opts.from);
+      if (opts?.to) search.append("to", opts.to);
+      const qs = search.toString();
+      const resp = await fetch(`${BASE_API_URL}/api/dashboard/getmetrics${qs ? `?${qs}` : ""}`, {
         headers: authHeaders(),
       });
       if (!resp.ok) throw new Error(`Failed to fetch metrics (${resp.status})`);
@@ -187,11 +233,17 @@ export const dashboardApi = {
       };
     }
   },
-  getTrends: async (opts?: { points?: number; days?: number }) => {
+  getTrends: async (opts?: { points?: number; days?: number; from?: string; to?: string }) => {
     const points = opts?.points ?? 10;
     const days = opts?.days ?? 30;
     try {
-      const resp = await fetch(`${BASE_API_URL}/api/dashboard/gettrends?points=${points}&days=${days}`, {
+      const search = new URLSearchParams({
+        points: String(points),
+        days: String(days),
+      });
+      if (opts?.from) search.append("from", opts.from);
+      if (opts?.to) search.append("to", opts.to);
+      const resp = await fetch(`${BASE_API_URL}/api/dashboard/gettrends?${search.toString()}`, {
         headers: authHeaders(),
       });
       if (!resp.ok) throw new Error(`Failed to fetch trends (${resp.status})`);
@@ -213,9 +265,13 @@ export const dashboardApi = {
     //   mttr: Math.floor(Math.random() * 60) + 20,
     // }));
   },
-  getAccuracyMetrics: async () => {
+  getAccuracyMetrics: async (opts?: { from?: string; to?: string }) => {
     try {
-      const resp = await fetch(`${BASE_API_URL}/api/dashboard/detection-accuracy`, {
+      const search = new URLSearchParams();
+      if (opts?.from) search.append("from", opts.from);
+      if (opts?.to) search.append("to", opts.to);
+      const qs = search.toString();
+      const resp = await fetch(`${BASE_API_URL}/api/dashboard/detection-accuracy${qs ? `?${qs}` : ""}`, {
         headers: authHeaders(),
       });
       if (!resp.ok) throw new Error(`Failed to fetch accuracy metrics (${resp.status})`);
@@ -233,8 +289,12 @@ export const dashboardApi = {
     // };
   },
 
-  getRecentActivities: async () => {
-    const resp = await fetch(`${BASE_API_URL}/api/dashboard/recent-activities`, {
+  getRecentActivities: async (opts?: { from?: string; to?: string }) => {
+    const search = new URLSearchParams();
+    if (opts?.from) search.append("from", opts.from);
+    if (opts?.to) search.append("to", opts.to);
+    const qs = search.toString();
+    const resp = await fetch(`${BASE_API_URL}/api/dashboard/recent-activities${qs ? `?${qs}` : ""}`, {
       headers: authHeaders(),
     });
     if (!resp.ok) {
